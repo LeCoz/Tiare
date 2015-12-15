@@ -1,5 +1,5 @@
 from PySide import QtGui, QtCore
-from pyqtgraph import PlotWidget, FillBetweenItem
+from pyqtgraph import PlotWidget, FillBetweenItem, mkPen
 from analysers import load_sound, energy, cut
 from datetime import datetime
 
@@ -88,6 +88,7 @@ class Tiare(QtGui.QMainWindow):
         self.samples = []
         self.sr = 0
         self.filepath = None
+        self.widget.hide()
         self.show()
 
     def change_threshold(self, value):
@@ -102,8 +103,8 @@ class Tiare(QtGui.QMainWindow):
             self.seg_down.setData([self.energy_tl[0], self.energy_tl[-1]], [-0.85, -0.85])
 
     def change_min_len(self, value=0):
-        self.min_seg_label.setText('Longeur minimal de segment (%.3f s)' % (float(self.min_len.value())/100))
-        self.min_sil_label.setText('Longeur minimal de silence (%.3f s)' % (float(self.min_len_sil.value())/100))
+        self.min_seg_label.setText("Longeur minimale d'un segment (%.3f s)" % (float(self.min_len.value())/100))
+        self.min_sil_label.setText("Longeur minimale d'un silence (%.3f s)" % (float(self.min_len_sil.value())/100))
         self.change_threshold(self.th_slider.value())
 
     def compute_energy(self, value=None):
@@ -127,6 +128,7 @@ class Tiare(QtGui.QMainWindow):
 
     def load(self):
         fpath, _ = QtGui.QFileDialog.getOpenFileName(self, 'Choisir un fichier', '~/', filter="*.wav")
+        self.widget.show()
         if fpath:
             self.filepath = fpath
             self.saveAction.setEnabled(True)
@@ -141,7 +143,8 @@ class Tiare(QtGui.QMainWindow):
             self.fig_signal.getPlotItem().plot(timeline, map(lambda x: x/m, self.samples))
             self.fig_energy_plot = self.fig_energy.getPlotItem().plot(self.energy_tl, self.energy)
             self.thline = self.fig_energy.getPlotItem().plot([self.energy_tl[0], self.energy_tl[-1]],
-                                                             [float(self.th_slider.value())/100]*2)
+                                                             [float(self.th_slider.value())/100]*2,
+                                               pen=({'color': "k", "width": 1.5}))
             self.seg_up = self.fig_segments.getPlotItem().plot([self.energy_tl[0], self.energy_tl[-1]],
                                                                [-0.85, -0.85])
 
